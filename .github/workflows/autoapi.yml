@@ -10,7 +10,8 @@ on:
   #  branches: 
   #    - master
   schedule:
-    - cron: "10 */2 * * *"
+    - cron: '0 8-19 * * *'
+      timezone: 'Asia/Hong_Kong'
   watch:
     types: [started]
    
@@ -47,6 +48,18 @@ jobs:
         sed -i '10 r configid.txt' temp.py
         sed -i '12 r configkey.txt' temp.py
         sed -i '14 r refreshtoken.txt' temp.py
+    - name: Enforce HK time window (08–20)
+      run: |
+        HOUR=$(TZ=Asia/Hong_Kong date +%H)
+        if [ "$HOUR" -lt 8 ] || [ "$HOUR" -gt 20 ]; then
+          echo "Outside HK time window (08–20). Exiting."
+          exit 0
+        fi
+    - name: Random delay (0–59 minutes)
+      run: |
+        DELAY=$((RANDOM % 3600))
+        echo "Random delay: ${DELAY}s"
+        sleep $DELAY
     - name: Test Api #ApiCall
       run: | 
         echo `date +"%Y-%m-%d %H:%M:%S"` begin > time.log
